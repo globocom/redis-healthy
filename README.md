@@ -2,7 +2,6 @@
 
 It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) (such as [`latency`](http://redis.io/topics/latency), `connected_clients`, `instantaneous_ops_per_sec` and others) and send it to the [Logstash](https://www.elastic.co/products/logstash).
 
-sample.png
 ![sample graph](sample.png "Metrics Sample")
 
 ## Metrics
