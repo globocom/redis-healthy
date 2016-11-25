@@ -16,9 +16,11 @@ import (
 
 func main() {
 	log.Println("starting")
-	config := configuration()
-	pingFrequency, _ := strconv.Atoi(config["pingFrequency"].(string))
-	ticker := time.NewTicker(time.Duration(pingFrequency) * time.Second)
+	config, err := getConfig()
+
+	checkError(err)
+
+	ticker := time.NewTicker(time.Duration(config.pingFrequency) * time.Second)
 
 	for _ = range ticker.C {
 		ping()
@@ -30,8 +32,10 @@ func main() {
 func ping() {
 	log.Println("starting ping")
 
-	config := configuration()
-	frequency, _ := strconv.Atoi(config["pingFrequency"].(string))
+	config, err := getConfig()
+
+	checkError(err)
+
 	redisClient := createRedis(config)
 	defer redisClient.Close()
 
@@ -40,7 +44,7 @@ func ping() {
 	infoResponse, err := redisClient.Info().Result()
 	checkError(err)
 
-	allRedisFields := parse(infoResponse, config["redisListMetricsToWatch"].([]string))
+	allRedisFields := parse(infoResponse, config.redisListMetricsToWatch)
 
 	metrics := make(map[string]interface{})
 
@@ -50,7 +54,7 @@ func ping() {
 		metrics[key] = value
 	}
 
-	latestLatency, err := fetchLatestLatency(redisClient, config["redisLatencyThreshold"].(string), frequency)
+	latestLatency, err := fetchLatestLatency(redisClient, config)
 	checkError(err)
 
 	if latestLatency > -1 {
@@ -58,58 +62,76 @@ func ping() {
 	}
 
 	var sender sender
-	sender = logstash{Host: config["logstashHost"].(string), Port: config["logstashPort"].(string), Protocol: "udp", Namespace: config["project"].(string)}
+	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
 
 	sender.Send(metrics)
 	log.Println("all the metrics were sent")
 	log.Println("ending ping")
 }
 
-func configuration() map[string]interface{} {
-	config := make(map[string]interface{})
+type configuration struct {
+	redisHost               string
+	logstashHost            string
+	logstashPort            string
+	redisMasterName         string
+	redisPwd                string
+	redisSentinel           string
+	redisLatencyThreshold   string
+	redisListMetricsToWatch []string
+	pingFrequency           int
+	project                 string
+}
 
-	redisHost, err := fetchMandatoryParameter("REDIS_HOST")
-	checkError(err)
-	config["redisHost"] = redisHost
+func getConfig() (configuration, error) {
+	var err error
+	config := configuration{}
 
-	logstashHost, err := fetchMandatoryParameter("LOGSTASH_HOST")
-	checkError(err)
-	config["logstashHost"] = logstashHost
-
-	logstashPort, err := fetchMandatoryParameter("LOGSTASH_PORT")
-	checkError(err)
-	config["logstashPort"] = logstashPort
-
-	config["redisMasterName"] = fetchParameter("REDIS_MASTER_NAME")
-	config["redisPwd"] = fetchParameter("REDIS_PWD")
-	config["redisSentinel"] = fetchParameter("REDIS_SENTINEL")
-
-	if config["redisSentinel"] != "" && config["redisMasterName"] == "" {
-		checkError(errors.New("When you're using sentinel you must provide the env REDIS_MASTER_NAME"))
+	config.redisHost, err = fetchMandatoryParameter("REDIS_HOST")
+	if err != nil {
+		return config, err
 	}
 
-	config["redisLatencyThreshold"] = fetchParameter("REDIS_LATENCY_THRESHOLD")
+	config.logstashHost, err = fetchMandatoryParameter("LOGSTASH_HOST")
+	if err != nil {
+		return config, err
+	}
+
+	config.logstashPort, err = fetchMandatoryParameter("LOGSTASH_PORT")
+	if err != nil {
+		return config, err
+	}
+
+	config.redisMasterName = fetchParameter("REDIS_MASTER_NAME")
+	config.redisPwd = fetchParameter("REDIS_PWD")
+	config.redisSentinel = fetchParameter("REDIS_SENTINEL")
+
+	if config.redisSentinel != "" && config.redisMasterName == "" {
+		return config, errors.New("When you're using sentinel you must provide the env REDIS_MASTER_NAME")
+	}
+
+	config.redisLatencyThreshold = fetchParameter("REDIS_LATENCY_THRESHOLD")
 
 	// a list of fields one want to measure separated by , ex: "client_longest_output_list,connected_clients"
-	config["redisMetricsToWatch"] = fetchParameter("REDIS_METRICS_TO_WATCH")
+	redisMetricsToWatch := fetchParameter("REDIS_METRICS_TO_WATCH")
 
-	if config["redisMetricsToWatch"] == "" {
-		config["redisMetricsToWatch"] = "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
+	if redisMetricsToWatch == "" {
+		redisMetricsToWatch = "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
 	}
 
-	config["pingFrequency"] = fetchParameter("PING_FREQUENCY")
+	config.pingFrequency, _ = strconv.Atoi(fetchParameter("PING_FREQUENCY"))
 
-	if config["pingFrequency"] == "" {
-		config["pingFrequency"] = "10"
+	if config.pingFrequency == 0 {
+		config.pingFrequency = 10
 	}
 
-	config["redisListMetricsToWatch"] = strings.Split(config["redisMetricsToWatch"].(string), ",")
+	config.redisListMetricsToWatch = strings.Split(redisMetricsToWatch, ",")
 
-	project, err := fetchMandatoryParameter("PROJECT")
-	checkError(err)
-	config["project"] = project
+	config.project, err = fetchMandatoryParameter("PROJECT")
+	if err != nil {
+		return config, err
+	}
 
-	return config
+	return config, nil
 }
 
 func checkError(err error) {
@@ -131,17 +153,17 @@ func fetchParameter(key string) string {
 	return os.Getenv(key)
 }
 
-func createRedis(config map[string]interface{}) *redis.Client {
-	if config["redisSentinel"] != "" {
+func createRedis(config configuration) *redis.Client {
+	if config.redisSentinel != "" {
 		return redis.NewFailoverClient(&redis.FailoverOptions{
-			MasterName:    config["redisMasterName"].(string),
-			Password:      config["redisPwd"].(string),
-			SentinelAddrs: strings.Split(config["redisHost"].(string), ","),
+			MasterName:    config.redisMasterName,
+			Password:      config.redisPwd,
+			SentinelAddrs: strings.Split(config.redisHost, ","),
 		})
 	}
 	return redis.NewClient(&redis.Options{
-		Addr:     config["redisHost"].(string),
-		Password: config["redisPwd"].(string),
+		Addr:     config.redisHost,
+		Password: config.redisPwd,
 		DB:       0,
 	})
 }
@@ -156,10 +178,10 @@ func parse(result string, metricsToWatch []string) [][]string {
 
 // it fetches the latest latency according with the threshold
 // it'll reset the latency (0) when it has passed PING_FREQUENCY time
-func fetchLatestLatency(redisClient *redis.Client, redisLatencyThreshold string, frequency int) (int64, error) {
-	if redisLatencyThreshold != "" {
-		redisClient.ConfigSet("latency-monitor-threshold", redisLatencyThreshold)
-		return measureLatency(redisClient, frequency)
+func fetchLatestLatency(redisClient *redis.Client, config configuration) (int64, error) {
+	if config.redisLatencyThreshold != "" {
+		redisClient.ConfigSet("latency-monitor-threshold", config.redisLatencyThreshold)
+		return measureLatency(redisClient, config.pingFrequency)
 
 	}
 	return -1, nil
