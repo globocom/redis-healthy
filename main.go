@@ -121,7 +121,8 @@ func ping(config configuration) error {
 	var sender sender
 	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
 
-	sender.Send(metrics)
+	sender.send(metrics)
+
 	log.Println("all the metrics were sent")
 	log.Println("ending ping")
 
@@ -212,7 +213,7 @@ func measureLatency(client *redis.Client, frequency int) (int64, error) {
 }
 
 type sender interface {
-	Send(data map[string]interface{}) (string, error)
+	send(data map[string]interface{}) (string, error)
 }
 
 type logstash struct {
@@ -222,7 +223,7 @@ type logstash struct {
 	Namespace string
 }
 
-func (l logstash) Send(data map[string]interface{}) (string, error) {
+func (l logstash) send(data map[string]interface{}) (string, error) {
 	// it creates a default client, ex: "project-redis"
 	data["client"] = l.Namespace + "-redis"
 	log.Println("sending metrics")
