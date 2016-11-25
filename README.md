@@ -45,10 +45,12 @@ REDIS_METRICS_TO_WATCH="client_longest_output_list,instantaneous_ops_per_sec"
 // default: "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,
 // instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,
 // keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
+LOGSTASH_HOST="logstash1" // * logstash host
+LOGSTASH_PORT="8989" // * logstash port
 ```
 
 ## Usage
 
 ```bash
-REDIS_LATENCY_THRESHOLD="250" REDIS_HOST="localhost:6379" LOGSTASH_HOST="logstash.mine:8515"  PROJECT="myapp" go run main.go
+REDIS_LATENCY_THRESHOLD="250" REDIS_HOST="localhost:6379" LOGSTASH_HOST="logstash.mine" LOGSTASH_PORT="8515"  PROJECT="myapp" go run main.go
 ```
