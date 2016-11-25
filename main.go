@@ -83,6 +83,11 @@ func configuration() map[string]interface{} {
 	config["redisMasterName"] = fetchParameter("REDIS_MASTER_NAME")
 	config["redisPwd"] = fetchParameter("REDIS_PWD")
 	config["redisSentinel"] = fetchParameter("REDIS_SENTINEL")
+
+	if config["redisSentinel"] != "" && config["redisMasterName"] == "" {
+		checkError(errors.New("When you're using sentinel you must provide the env REDIS_MASTER_NAME"))
+	}
+
 	config["redisLatencyThreshold"] = fetchParameter("REDIS_LATENCY_THRESHOLD")
 
 	// a list of fields one want to measure separated by , ex: "client_longest_output_list,connected_clients"
