@@ -38,39 +38,39 @@ func getConfig() (configuration, error) {
 	var err error
 	config := configuration{}
 
-	config.redisHost, err = fetchMandatoryParameter("REDIS_HOST")
+	config.redisHost, err = getMandatoryParameter("REDIS_HOST")
 	if err != nil {
 		return config, err
 	}
 
-	config.logstashHost, err = fetchMandatoryParameter("LOGSTASH_HOST")
+	config.logstashHost, err = getMandatoryParameter("LOGSTASH_HOST")
 	if err != nil {
 		return config, err
 	}
 
-	config.logstashPort, err = fetchMandatoryParameter("LOGSTASH_PORT")
+	config.logstashPort, err = getMandatoryParameter("LOGSTASH_PORT")
 	if err != nil {
 		return config, err
 	}
 
-	config.redisMasterName = fetchParameter("REDIS_MASTER_NAME")
-	config.redisPwd = fetchParameter("REDIS_PWD")
-	config.redisSentinel = fetchParameter("REDIS_SENTINEL")
+	config.redisMasterName = getParameter("REDIS_MASTER_NAME")
+	config.redisPwd = getParameter("REDIS_PWD")
+	config.redisSentinel = getParameter("REDIS_SENTINEL")
 
 	if config.redisSentinel != "" && config.redisMasterName == "" {
 		return config, errors.New("When you're using sentinel you must provide the env REDIS_MASTER_NAME")
 	}
 
-	config.redisLatencyThreshold = fetchParameter("REDIS_LATENCY_THRESHOLD")
+	config.redisLatencyThreshold = getParameter("REDIS_LATENCY_THRESHOLD")
 
 	// a list of fields one want to measure separated by , ex: "client_longest_output_list,connected_clients"
-	redisMetricsToWatch := fetchParameter("REDIS_METRICS_TO_WATCH")
+	redisMetricsToWatch := getParameter("REDIS_METRICS_TO_WATCH")
 
 	if redisMetricsToWatch == "" {
 		redisMetricsToWatch = "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
 	}
 
-	config.pingFrequency, _ = strconv.Atoi(fetchParameter("PING_FREQUENCY"))
+	config.pingFrequency, _ = strconv.Atoi(getParameter("PING_FREQUENCY"))
 
 	if config.pingFrequency == 0 {
 		config.pingFrequency = 10
@@ -78,7 +78,7 @@ func getConfig() (configuration, error) {
 
 	config.redisListMetricsToWatch = strings.Split(redisMetricsToWatch, ",")
 
-	config.project, err = fetchMandatoryParameter("PROJECT")
+	config.project, err = getMandatoryParameter("PROJECT")
 	if err != nil {
 		return config, err
 	}
@@ -147,15 +147,15 @@ type configuration struct {
 	project                 string
 }
 
-func fetchMandatoryParameter(key string) (string, error) {
-	value := fetchParameter(key)
+func getMandatoryParameter(key string) (string, error) {
+	value := getParameter(key)
 	if value == "" {
 		return "", errors.New("You must provide the env " + key)
 	}
 	return value, nil
 }
 
-func fetchParameter(key string) string {
+func getParameter(key string) string {
 	return os.Getenv(key)
 }
 
