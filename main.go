@@ -108,19 +108,13 @@ func ping(config configuration) (map[string]interface{}, error) {
 		metrics["latency"] = latency
 	}
 
-	send(metrics, config)
+	var sender sender
+	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
+	sender.send(metrics)
 
 	log.Println("ending ping")
 
 	return metrics, nil
-}
-
-func send(metrics map[string]interface{}, config configuration) {
-	var sender sender
-	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
-
-	sender.send(metrics)
-	log.Println("all the metrics were sent")
 }
 
 func getInfo(redisClient *redis.Client) (string, error) {
