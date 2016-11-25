@@ -25,7 +25,7 @@ func main() {
 	ticker := time.NewTicker(time.Duration(config.pingFrequency) * time.Second)
 
 	for _ = range ticker.C {
-		err = ping(config)
+		_, err := ping(config)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -86,47 +86,52 @@ func getConfig() (configuration, error) {
 	return config, nil
 }
 
-func ping(config configuration) error {
+func ping(config configuration) (map[string]interface{}, error) {
 	log.Println("starting ping")
 
 	redisClient := createRedis(config)
 	defer redisClient.Close()
 
-	log.Println("connected to redis")
-
-	infoResponse, err := redisClient.Info().Result()
+	info, err := getInfo(redisClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	allRedisFields := parse(infoResponse, config.redisListMetricsToWatch)
+	metrics := parse(info, config.redisListMetricsToWatch)
 
-	metrics := make(map[string]interface{})
-
-	for _, element := range allRedisFields {
-		key := element[1]
-		value, _ := strconv.Atoi(element[2])
-		metrics[key] = value
-	}
-
-	latestLatency, err := fetchLatestLatency(redisClient, config)
+	latency, err := getLatency(redisClient, config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if latestLatency > -1 {
-		metrics["latency"] = latestLatency
+	if latency > -1 {
+		metrics["latency"] = latency
 	}
 
+	send(metrics, config)
+
+	log.Println("ending ping")
+
+	return metrics, nil
+}
+
+func send(metrics map[string]interface{}, config configuration) {
 	var sender sender
 	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
 
 	sender.send(metrics)
-
 	log.Println("all the metrics were sent")
-	log.Println("ending ping")
+}
 
-	return nil
+func getInfo(redisClient *redis.Client) (string, error) {
+	log.Println("connected to redis")
+
+	infoResponse, err := redisClient.Info().Result()
+	if err != nil {
+		return "", err
+	}
+
+	return infoResponse, nil
 }
 
 type configuration struct {
@@ -169,17 +174,26 @@ func createRedis(config configuration) *redis.Client {
 	})
 }
 
-// each sub array contains the wanted fields and their values
-// ex: ["client_longest_output_list:2" "client_longest_output_list" 2"]
-func parse(result string, metricsToWatch []string) [][]string {
+// It parses the info response from redis to a map containing each metric
+func parse(infoResult string, metricsToWatch []string) map[string]interface{} {
 	regexFieldsPattern := strings.Join(metricsToWatch, "|")
 	regularProperty := regexp.MustCompile("(" + regexFieldsPattern + "):([[:alnum:]]+)")
-	return regularProperty.FindAllStringSubmatch(result, -1)
+	allRedisFields := regularProperty.FindAllStringSubmatch(infoResult, -1)
+
+	metrics := make(map[string]interface{})
+
+	for _, element := range allRedisFields {
+		key := element[1]
+		value, _ := strconv.Atoi(element[2])
+		metrics[key] = value
+	}
+
+	return metrics
 }
 
 // it fetches the latest latency according with the threshold
 // it'll reset the latency (0) when it has passed PING_FREQUENCY time
-func fetchLatestLatency(redisClient *redis.Client, config configuration) (int64, error) {
+func getLatency(redisClient *redis.Client, config configuration) (int64, error) {
 	if config.redisLatencyThreshold != "" {
 		redisClient.ConfigSet("latency-monitor-threshold", config.redisLatencyThreshold)
 		return measureLatency(redisClient, config.pingFrequency)
