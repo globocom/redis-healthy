@@ -28,25 +28,26 @@ It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) 
 
 ## Options
 
-```javascript
-// When you see a *, it means you need to pass this configuration
-PROJECT="myMetrics" // * an identifier for the metrics, it'll be send as "client": PROJECT + "-redis"
-PING_FREQUENCY="30" // frequency in seconds that the metrics are fetched default: 10
+```bash
+# When you see a *, it means you need to set the configuration
+PROJECT="myMetrics" # * an identifier for the metrics, it'll be send as "client": PROJECT + "-redis"
+PING_FREQUENCY="30" # frequency in seconds that the metrics are fetched default: 10
 
-REDIS_HOST="singlehost:9090" // * redis host
-REDIS_SENTINEL="y" // if you're using sentinel default: ""
-REDIS_HOST="sentinel1:9090,sentinel1:9090,sentinel1:9090,"  // * if you're using redis sentinel, then provide hosts separated by commas
-REDIS_PWD="f00d" // redis password default: ""
-REDIS_MASTER_NAME="master" // redis sentinel master name default: ""
-REDIS_LATENCY_THRESHOLD="150" // redis latency threshold in ms, default: ""
-// when any command take longer than the threshold then it sends data about latency default: ""
+REDIS_HOST="singlehost:9090" # * redis host with port
+REDIS_SENTINEL="y" # whether you're using sentinel or not default: ""
+REDIS_HOST="sentinel1:9090,sentinel1:9090,sentinel1:9090"  # * if you're using redis sentinel, then REDIS_HOST will host the sentinel hosts separated by commas
+REDIS_PWD="f00d" # redis password default: ""
+REDIS_MASTER_NAME="master" # redis sentinel master name default: ""
+REDIS_LATENCY_THRESHOLD="150" # redis latency threshold in ms, default: ""
+# when any command take longer than the threshold then it sends data about latency default: ""
+# after PING_FREQUENCY has passed it sends 0
 REDIS_METRICS_TO_WATCH="client_longest_output_list,instantaneous_ops_per_sec"
-// the fields you want to keep track from the output of the command "info"
-// default: "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,
-// instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,
-// keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
-LOGSTASH_HOST="logstash1" // * logstash host
-LOGSTASH_PORT="8989" // * logstash port
+# the fields you want to keep track from the output of the command "info"
+# default: "client_longest_output_list,connected_clients,blocked_clients,rejected_connections,
+# instantaneous_input_kbps,instantaneous_output_kbps,instantaneous_ops_per_sec,keyspace_hits,
+# keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
+LOGSTASH_HOST="logstash1" # * logstash host
+LOGSTASH_PORT="8989" # * logstash port
 ```
 
 ## Usage
