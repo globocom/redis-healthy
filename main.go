@@ -18,23 +18,29 @@ func main() {
 	log.Println("starting")
 	config, err := getConfig()
 
-	checkError(err)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	ticker := time.NewTicker(time.Duration(config.pingFrequency) * time.Second)
 
 	for _ = range ticker.C {
-		ping()
+		err = ping()
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 
 	log.Println("finished")
 }
 
-func ping() {
+func ping() error {
 	log.Println("starting ping")
 
 	config, err := getConfig()
-
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	redisClient := createRedis(config)
 	defer redisClient.Close()
@@ -42,7 +48,9 @@ func ping() {
 	log.Println("connected to redis")
 
 	infoResponse, err := redisClient.Info().Result()
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	allRedisFields := parse(infoResponse, config.redisListMetricsToWatch)
 
@@ -55,7 +63,9 @@ func ping() {
 	}
 
 	latestLatency, err := fetchLatestLatency(redisClient, config)
-	checkError(err)
+	if err != nil {
+		return err
+	}
 
 	if latestLatency > -1 {
 		metrics["latency"] = latestLatency
@@ -67,6 +77,8 @@ func ping() {
 	sender.Send(metrics)
 	log.Println("all the metrics were sent")
 	log.Println("ending ping")
+
+	return nil
 }
 
 type configuration struct {
@@ -132,13 +144,6 @@ func getConfig() (configuration, error) {
 	}
 
 	return config, nil
-}
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatal(err.Error())
-		os.Exit(1)
-	}
 }
 
 func fetchMandatoryParameter(key string) (string, error) {
