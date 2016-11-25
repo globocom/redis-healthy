@@ -25,7 +25,7 @@ func main() {
 	ticker := time.NewTicker(time.Duration(config.pingFrequency) * time.Second)
 
 	for _ = range ticker.C {
-		err = ping()
+		err = ping(config)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -34,13 +34,8 @@ func main() {
 	log.Println("finished")
 }
 
-func ping() error {
+func ping(config configuration) error {
 	log.Println("starting ping")
-
-	config, err := getConfig()
-	if err != nil {
-		return err
-	}
 
 	redisClient := createRedis(config)
 	defer redisClient.Close()
