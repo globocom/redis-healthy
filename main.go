@@ -54,7 +54,7 @@ func ping() {
 	checkError(err)
 
 	if latestLatency > -1 {
-		metrics["latest-latency"] = latestLatency
+		metrics["latency"] = latestLatency
 	}
 
 	var sender sender
