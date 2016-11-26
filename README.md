@@ -6,6 +6,12 @@ It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) 
 
 ![Redis Sample Metrics](sample.png "Redis Sample Metrics")
 
+## Tests
+
+```bash
+make test
+```
+
 ## Metrics
 
 ```javascript

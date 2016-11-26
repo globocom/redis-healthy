@@ -1,0 +1,15 @@
+version: "2"
+services:
+  test:
+    build: .
+    environment:
+        REDIS_HOST: redis:27017
+    command: go test
+    links:
+      - redis
+    depends_on:
+      - redis
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"

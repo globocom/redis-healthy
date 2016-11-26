@@ -1,0 +1,69 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "5rPfda8jFccr3A6heL+JAmi9K9g=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/davecgh/go-spew/spew",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "d77da356e56a7428ad25149ca77381849a6a5232",
+			"revisionTime": "2016-06-15T09:26:46Z"
+		},
+		{
+			"checksumSHA1": "zKKp5SZ3d3ycKe4EKMNT0BqAWBw=",
+			"origin": "github.com/stretchr/testify/vendor/github.com/pmezard/go-difflib/difflib",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "d77da356e56a7428ad25149ca77381849a6a5232",
+			"revisionTime": "2016-06-15T09:26:46Z"
+		},
+		{
+			"checksumSHA1": "iydUphwYqZRq3WhstEdGsbvBAKs=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "d77da356e56a7428ad25149ca77381849a6a5232",
+			"revisionTime": "2016-06-15T09:26:46Z"
+		},
+		{
+			"checksumSHA1": "+4r0PnLwwyhO5/jvU5R/TEJb4kA=",
+			"path": "gopkg.in/bsm/ratelimit.v1",
+			"revision": "db14e161995a5177acef654cb0dd785e8ee8bc22",
+			"revisionTime": "2016-02-20T15:49:07Z"
+		},
+		{
+			"checksumSHA1": "vQcpzAl8YnbFHpWeUiqbxsbOJrs=",
+			"path": "gopkg.in/redis.v5",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		},
+		{
+			"checksumSHA1": "vQSE4FOH4EvyzYA72w60XOetmVY=",
+			"path": "gopkg.in/redis.v5/internal",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		},
+		{
+			"checksumSHA1": "2Ek4SixeRSKOX3mUiBMs3Aw+Guc=",
+			"path": "gopkg.in/redis.v5/internal/consistenthash",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		},
+		{
+			"checksumSHA1": "rJYVKcBrwYUGl7nuuusmZGrt8mY=",
+			"path": "gopkg.in/redis.v5/internal/hashtag",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		},
+		{
+			"checksumSHA1": "MuVVHw/uzk6gwBsQ8deMYacmgTM=",
+			"path": "gopkg.in/redis.v5/internal/pool",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		},
+		{
+			"checksumSHA1": "Pn4Vc2X2hUhm0SV7j82YlMW8j5o=",
+			"path": "gopkg.in/redis.v5/internal/proto",
+			"revision": "b6bfe529a846fbb9a58c832ce71c61b6fde12c15",
+			"revisionTime": "2016-11-08T10:04:23Z"
+		}
+	],
+	"rootPath": "github.com/globocom/redis-healthy"
+}
