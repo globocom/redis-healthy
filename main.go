@@ -196,7 +196,7 @@ func getLatency(redisClient *redis.Client, config configuration) (int64, error) 
 	return -1, nil
 }
 
-func measureLatency(client *redis.Client, frequency int) (int64, error) {
+func measureLatency(client *redis.Client, pingFrequency int) (int64, error) {
 	cmd := redis.NewSliceCmd("latency", "latest")
 	if err := client.Process(cmd); err != nil {
 		return 0, err
@@ -204,13 +204,17 @@ func measureLatency(client *redis.Client, frequency int) (int64, error) {
 	var latest int64 = -1
 	rawValue := cmd.Val()
 
-	if len(rawValue) > 0 && len(rawValue[0].([]interface{})) > 3 {
+	thereIsLatency := len(rawValue) > 0 && len(rawValue[0].([]interface{})) > 3
+
+	if thereIsLatency {
 		response := rawValue[0].([]interface{})
 		latestCommandEpoch := time.Unix(response[1].(int64), 0)
 		now := time.Now()
 		diff := now.Sub(latestCommandEpoch)
 
-		if diff.Seconds() > float64(frequency) {
+		hasPassedTimeWithoutNewLatency := diff.Seconds() > float64(pingFrequency)
+
+		if hasPassedTimeWithoutNewLatency {
 			latest = 0
 		} else {
 			latest = response[2].(int64)
