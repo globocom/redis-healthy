@@ -1,9 +1,6 @@
 FROM golang
-ADD . /go
-RUN go get -u github.com/kardianos/govendor
-ENV $GOPATH=GOPATH:/go/vendor
-RUN export GOPATH="$GOPATH:$GOPATH/vendor"
-# RUN echo $GOPATH
-# RUN pwd
-# RUN ls vendor
-# RUN govendor add +external
+ENV APP_PATH /go/src/github.com/globocom/redis-healthy
+ADD . $APP_PATH
+WORKDIR $APP_PATH
+RUN go get -u github.com/Masterminds/glide
+RUN glide install
