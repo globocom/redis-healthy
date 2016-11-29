@@ -94,4 +94,5 @@ func TestPing(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.NotEqual(t, len(metrics), 0)
+	assert.Equal(t, metrics["connected_clients"].(int), 1)
 }
