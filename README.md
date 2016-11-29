@@ -4,7 +4,7 @@
 
 # redis-healthy
 
-It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) (such as [`latency`](http://redis.io/topics/latency), `connected_clients`, `instantaneous_ops_per_sec` and [others](http://redis.io/commands/INFO)) and then send it to [Logstash](https://www.elastic.co/products/logstash).
+It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) (such as [`latency`](http://redis.io/topics/latency), `connected_clients`, `instantaneous_ops_per_sec` and [others](http://redis.io/commands/INFO)) and then send them to [Logstash](https://www.elastic.co/products/logstash).
 
 ## Plotting the metrics with Grafana
 
