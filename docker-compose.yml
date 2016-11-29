@@ -7,7 +7,7 @@ services:
         LOGSTASH_HOST: logstash
         LOGSTASH_PORT: 8515
         PROJECT: "lock"
-    command: sh -c "./wait_for.sh redis 6379 && ./wait_for.sh logstash 8515 20 udp && go test"
+    command: sh -c "./wait_for.sh redis 6379 && ./wait_for.sh logstash 8515 20 udp && go test -cover"
     links:
       - redis
       - logstash
