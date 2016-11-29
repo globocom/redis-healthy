@@ -34,6 +34,7 @@ func main() {
 	log.Println("finished")
 }
 
+// getConfig gets all the config from enviroment variables
 func getConfig() (configuration, error) {
 	var err error
 	config := configuration{}
@@ -91,6 +92,7 @@ func getConfig() (configuration, error) {
 	return config, nil
 }
 
+// ping gets and sends metrics periodically
 func ping(config configuration) (map[string]interface{}, error) {
 	log.Println("starting ping")
 
@@ -128,6 +130,7 @@ func ping(config configuration) (map[string]interface{}, error) {
 	return metrics, nil
 }
 
+// getInfo gets info from redis instance (from command "INFO")
 func getInfo(redisClient *redis.Client) (string, error) {
 	log.Println("connected to redis")
 
@@ -139,6 +142,7 @@ func getInfo(redisClient *redis.Client) (string, error) {
 	return infoResponse, nil
 }
 
+// configuration holds the data needed for the application
 type configuration struct {
 	redisHost               string
 	logstashHost            string
@@ -153,6 +157,8 @@ type configuration struct {
 	project                 string
 }
 
+// getMandatoryParameter gets enviroment variable value
+// if it's empty it'll raise an error
 func getMandatoryParameter(key string) (string, error) {
 	value := getParameter(key)
 	if value == "" {
@@ -161,10 +167,12 @@ func getMandatoryParameter(key string) (string, error) {
 	return value, nil
 }
 
+// getParameter gets enviroment variable value
 func getParameter(key string) string {
 	return os.Getenv(key)
 }
 
+// createRedis creates a redis instance
 func createRedis(config configuration) *redis.Client {
 	if config.redisSentinel != "" {
 		return redis.NewFailoverClient(&redis.FailoverOptions{
@@ -180,7 +188,7 @@ func createRedis(config configuration) *redis.Client {
 	})
 }
 
-// It parses the info response from redis to a map containing each metric
+// parse parses the info response from redis to a map containing each metric
 func parse(infoResult string, metricsToWatch []string) map[string]interface{} {
 	regexFieldsPattern := strings.Join(metricsToWatch, "|")
 	regularProperty := regexp.MustCompile("(" + regexFieldsPattern + "):([[:alnum:]]+)")
@@ -197,7 +205,7 @@ func parse(infoResult string, metricsToWatch []string) map[string]interface{} {
 	return metrics
 }
 
-// it fetches the latest latency according with the threshold
+// getLatency fetches the latest latency according with the threshold
 // it'll reset the latency (0) when it has passed PING_FREQUENCY time
 func getLatency(redisClient *redis.Client, config configuration) (int64, error) {
 	if config.redisLatencyThreshold != "" {
@@ -208,6 +216,7 @@ func getLatency(redisClient *redis.Client, config configuration) (int64, error) 
 	return -1, nil
 }
 
+// measureLatency deals with redis command latency to get the latest latency
 func measureLatency(client *redis.Client, pingFrequency int) (int64, error) {
 	cmd := redis.NewSliceCmd("latency", "latest")
 	if err := client.Process(cmd); err != nil {
@@ -236,10 +245,12 @@ func measureLatency(client *redis.Client, pingFrequency int) (int64, error) {
 	return latest, nil
 }
 
+// sender is a type that sends metrics
 type sender interface {
 	send(data map[string]interface{}) (string, error)
 }
 
+// logstash is a sub-type of sender that sends metrics
 type logstash struct {
 	Host      string
 	Port      string
@@ -247,6 +258,7 @@ type logstash struct {
 	Namespace string
 }
 
+// send sends metrics to logstash in form of json
 func (l logstash) send(data map[string]interface{}) (string, error) {
 	// it creates a default client, ex: "project-redis"
 	data["client"] = l.Namespace + "-redis"
