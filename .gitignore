@@ -1,2 +1,2 @@
-vendor/*
-redis-healthy
+/redis-healthy
+/vendor
