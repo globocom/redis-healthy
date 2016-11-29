@@ -1,5 +1,6 @@
 [![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/globocom/redis-healthy)](https://goreportcard.com/report/github.com/globocom/redis-healthy)
+[![Build Status](https://travis-ci.org/globocom/redis-healthy.svg?branch=master)](https://travis-ci.org/globocom/redis-healthy)
 
 # redis-healthy
 
