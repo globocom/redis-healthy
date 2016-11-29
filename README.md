@@ -59,6 +59,7 @@ REDIS_METRICS_TO_WATCH="client_longest_output_list,instantaneous_ops_per_sec"
 # keyspace_misses,mem_fragmentation_ratio,sync_full,sync_partial_ok,sync_partial_err"
 LOGSTASH_HOST="logstash1" # * logstash host
 LOGSTASH_PORT="8989" # * logstash port
+LOGSTASH_PROTOCOL="udp" # the transport protocol used by logstash default: "udp"
 ```
 
 ## Usage

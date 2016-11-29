@@ -44,6 +44,15 @@ func TestGetConfig(t *testing.T) {
 	os.Setenv("PING_FREQUENCY", oldValue)
 }
 
+func TestDefaultConfig(t *testing.T) {
+	config, err := getConfig()
+
+	assert.Nil(t, err)
+	assert.Equal(t, config.logstashProtocol, "udp")
+	assert.Contains(t, config.redisListMetricsToWatch, "connected_clients")
+	assert.Equal(t, config.pingFrequency, 10)
+}
+
 func TestGetConfigWithoutMandatory(t *testing.T) {
 	oldValue := getParameter("LOGSTASH_HOST")
 	os.Setenv("LOGSTASH_HOST", "")

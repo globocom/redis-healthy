@@ -53,6 +53,11 @@ func getConfig() (configuration, error) {
 		return config, err
 	}
 
+	config.logstashProtocol = getParameter("LOGSTASH_PROTOCOL")
+	if config.logstashProtocol == "" {
+		config.logstashProtocol = "udp"
+	}
+
 	config.redisMasterName = getParameter("REDIS_MASTER_NAME")
 	config.redisPwd = getParameter("REDIS_PWD")
 	config.redisSentinel = getParameter("REDIS_SENTINEL")
@@ -109,7 +114,7 @@ func ping(config configuration) (map[string]interface{}, error) {
 	}
 
 	var sender sender
-	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: "udp", Namespace: config.project}
+	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: config.logstashProtocol, Namespace: config.project}
 	sender.send(metrics)
 
 	log.Println("ending ping")
@@ -132,6 +137,7 @@ type configuration struct {
 	redisHost               string
 	logstashHost            string
 	logstashPort            string
+	logstashProtocol        string
 	redisMasterName         string
 	redisPwd                string
 	redisSentinel           string
