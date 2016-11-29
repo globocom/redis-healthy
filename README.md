@@ -1,3 +1,6 @@
+[![license](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/globocom/redis-healthy)](https://goreportcard.com/report/github.com/globocom/redis-healthy)
+
 # redis-healthy
 
 It retrieves metrics, periodically, from [Redis](http://redis.io) (or sentinel) (such as [`latency`](http://redis.io/topics/latency), `connected_clients`, `instantaneous_ops_per_sec` and [others](http://redis.io/commands/INFO)) and then send it to [Logstash](https://www.elastic.co/products/logstash).
