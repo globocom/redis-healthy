@@ -85,3 +85,13 @@ func TestGetInfo(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEqual(t, info, "")
 }
+
+func TestPing(t *testing.T) {
+	config, err := getConfig()
+	assert.Nil(t, err)
+
+	metrics, err := ping(config)
+	assert.Nil(t, err)
+
+	assert.NotEqual(t, len(metrics), 0)
+}
