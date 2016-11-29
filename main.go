@@ -226,7 +226,7 @@ func measureLatency(client *redis.Client, pingFrequency int) (int64, error) {
 	if err := client.Process(cmd); err != nil {
 		return int64(0), err
 	}
-	var latest int64 = -1
+	var latest int64
 	rawValue := cmd.Val()
 
 	thereIsLatency := len(rawValue) > 0 && len(rawValue[0].([]interface{})) > 3
