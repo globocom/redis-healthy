@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	redis "gopkg.in/redis.v5"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -95,4 +97,34 @@ func TestPing(t *testing.T) {
 
 	assert.NotEqual(t, len(metrics), 0)
 	assert.Equal(t, metrics["connected_clients"].(int), 1)
+}
+
+func TestGetLatency(t *testing.T) {
+	oldValueRedisLatencyThreshold := getParameter("REDIS_LATENCY_THRESHOLD")
+	// setting a new latency threshold (ms)
+	os.Setenv("REDIS_LATENCY_THRESHOLD", "50")
+
+	config, err := getConfig()
+	assert.Nil(t, err)
+
+	metrics, err := ping(config)
+	assert.Nil(t, err)
+
+	assert.Equal(t, metrics["latency"].(int64), int64(0))
+
+	// simulate a a high latency command `debug sleep .1` (sleep for 100 ms)
+	redisClient := createRedis(config)
+	defer redisClient.Close()
+	cmd := redis.NewStringCmd("debug", "sleep", "0.1")
+	err = redisClient.Process(cmd)
+	assert.Nil(t, err)
+
+	// check the latency
+	metrics, err = ping(config)
+	assert.Nil(t, err)
+
+	assert.Equal(t, metrics["latency"].(int64) >= 100, true)
+
+	// teardown
+	os.Setenv("REDIS_LATENCY_THRESHOLD", oldValueRedisLatencyThreshold)
 }

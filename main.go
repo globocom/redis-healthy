@@ -199,7 +199,7 @@ func getLatency(redisClient *redis.Client, config configuration) (int64, error) 
 func measureLatency(client *redis.Client, pingFrequency int) (int64, error) {
 	cmd := redis.NewSliceCmd("latency", "latest")
 	if err := client.Process(cmd); err != nil {
-		return 0, err
+		return int64(0), err
 	}
 	var latest int64 = -1
 	rawValue := cmd.Val()
