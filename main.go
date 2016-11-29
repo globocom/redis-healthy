@@ -114,7 +114,13 @@ func ping(config configuration) (map[string]interface{}, error) {
 	}
 
 	var sender sender
-	sender = logstash{Host: config.logstashHost, Port: config.logstashPort, Protocol: config.logstashProtocol, Namespace: config.project}
+	sender = logstash{
+		Host:      config.logstashHost,
+		Port:      config.logstashPort,
+		Protocol:  config.logstashProtocol,
+		Namespace: config.project,
+	}
+
 	sender.send(metrics)
 
 	log.Println("ending ping")
