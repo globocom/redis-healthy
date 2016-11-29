@@ -1,3 +1,7 @@
+// REDIS-HEALTHY DOCUMENTATION
+//
+// Package main provides a program that retrieves metrics, periodically, from Redis (or sentinel)
+// (such as latency, connected_clients, instantaneous_ops_per_sec and others) and then send it to Logstash.
 package main
 
 import (
