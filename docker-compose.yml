@@ -16,10 +16,6 @@ services:
       - logstash
   redis:
     image: redis
-    ports:
-      - "6379:6379"
   logstash:
     command: " -e 'input { udp { port => 8515  codec => json } } output { stdout { } }'"
     image: logstash
-    ports:
-      - "8515:8515"
