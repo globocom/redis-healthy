@@ -98,8 +98,7 @@ func getConfig() (configuration, error) {
 
 // ping gets and sends metrics periodically
 func ping(config configuration) (map[string]interface{}, error) {
-	log.Println("starting ping")
-
+	log.Println("connecting to redis")
 	redisClient := createRedis(config)
 	defer redisClient.Close()
 
@@ -129,15 +128,11 @@ func ping(config configuration) (map[string]interface{}, error) {
 
 	sender.send(metrics)
 
-	log.Println("ending ping")
-
 	return metrics, nil
 }
 
 // getInfo gets info from redis instance (from command "INFO")
 func getInfo(redisClient *redis.Client) (string, error) {
-	log.Println("connected to redis")
-
 	infoResponse, err := redisClient.Info().Result()
 	if err != nil {
 		return "", err
@@ -214,8 +209,10 @@ func parse(infoResult string, metricsToWatch []string) map[string]interface{} {
 func getLatency(redisClient *redis.Client, config configuration) (int64, error) {
 	if config.redisLatencyThreshold != "" {
 		redisClient.ConfigSet("latency-monitor-threshold", config.redisLatencyThreshold)
-		return measureLatency(redisClient, config.pingFrequency)
-
+		log.Println("starting ping")
+		latency, err := measureLatency(redisClient, config.pingFrequency)
+		log.Println("ending ping")
+		return latency, err
 	}
 	return -1, nil
 }
@@ -266,7 +263,6 @@ type logstash struct {
 func (l logstash) send(data map[string]interface{}) (string, error) {
 	// it creates a default client, ex: "project-redis"
 	data["client"] = l.Namespace + "-redis"
-	log.Println("sending metrics")
 
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -279,7 +275,7 @@ func (l logstash) send(data map[string]interface{}) (string, error) {
 	}
 	defer conn.Close()
 
-	log.Println("sending metrics")
+	log.Printf("sending metrics %s", b)
 
 	n, err := conn.Write(b)
 	if err != nil {
